@@ -1,3 +1,5 @@
+This is a fork from https://github.com/naver/force
+
 # FORCE
 Official implementation of FORCE algorithm from *Progressive Skeletonization: Trimming more fat from a network at initialization* (https://arxiv.org/abs/2006.09081)
 

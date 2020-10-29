@@ -175,14 +175,18 @@ def train(seed):
         train_loss = train_cross_entropy(epoch, net, train_loader, optimiser, device,
                                              writer, LOG_INTERVAL=20)
         iterations +=len(train_loader)
+        evaluator.run(train_loader)
+        metrics = evaluator.state.metrics
+        avg_accuracy = metrics['accuracy']
+        writer.add_scalar("train/accuracy", avg_accuracy, epoch)
         # Evaluate
         evaluator.run(test_loader)
         metrics = evaluator.state.metrics
         # Save history
         avg_accuracy = metrics['accuracy']
         avg_cross_entropy = metrics['cross_entropy']
-        writer.add_scalar("test/loss", avg_cross_entropy, iterations)
-        writer.add_scalar("test/accuracy", avg_accuracy, iterations)
+        writer.add_scalar("test/loss", avg_cross_entropy, epoch)
+        writer.add_scalar("test/accuracy", avg_accuracy, epoch)
             
         # Save model checkpoints
         if (epoch + 1) % args.save_interval == 0:

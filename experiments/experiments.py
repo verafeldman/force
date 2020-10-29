@@ -12,6 +12,8 @@ import torch.nn.functional as F
 from .models import *
 from .datasets import *
 
+import datetime
+
 network_name_module = {
     'resnet34': resnet34,
     'resnet50': resnet50,
@@ -200,6 +202,7 @@ def train_cross_entropy(epoch, model, train_loader, optimizer, device, writer, L
     # Signalling the model that it is in training mode
     model.train()
     train_loss = 0
+    top1_correct = 0
     for batch_idx, (data, labels) in enumerate(train_loader):
         # Loading the data onto the GPU
         data = data.to(device)
@@ -215,13 +218,25 @@ def train_cross_entropy(epoch, model, train_loader, optimizer, device, writer, L
         train_loss += loss.item()
         optimizer.step()
 
+        top1_correct += compute_topk_accuracy(labels, logits, 1)
+
         if batch_idx % LOG_INTERVAL == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
-                epoch, batch_idx * len(data), len(train_loader) * len(data),
+            now = datetime.datetime.now().strftime('%d/%m/%y %H:%M')
+            print('{} Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                now, epoch, batch_idx * len(data), len(train_loader) * len(data),
                 100. * batch_idx / len(train_loader), loss.item()))
-            writer.add_scalar("training/loss", loss.item(),
-                              epoch*len(train_loader)+batch_idx)
 
     print('====> Epoch: {} Average loss: {:.4f}'.format(
         epoch, train_loss / len(train_loader)))
+    writer.add_scalar("train/loss", train_loss / len(train_loader), epoch)
+    # writer.add_scalar("train/accuracy", top1_correct / len(train_loader), epoch)
     return train_loss / len(train_loader)
+
+
+def compute_topk_accuracy(labels, logits, k=1):
+    logits_onehot = F.softmax(logits, dim=1)
+    _, pred = torch.topk(logits_onehot, k, dim=-1)
+    pred = pred.t()
+    correct = pred.eq(labels.view(1, -1).expand_as(pred))
+    topk_accuracy = correct.view(-1).float().sum(0)
+    return topk_accuracy

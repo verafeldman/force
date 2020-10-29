@@ -193,7 +193,7 @@ def get_tiny_imagenet_train_valid_loader(batch_size,
                                            shuffle=True,
                                            num_workers=1):
 
-    root = '/path_to_tiny-imagenet_dataset/'
+    root = '/media/verafeldman/SHARED/datasets'
     tiny_mean = [0.48024578664982126, 0.44807218089384643, 0.3975477478649648]
     tiny_std = [0.2769864069088257, 0.26906448510256, 0.282081906210584]
     transform_train = transforms.Compose([
