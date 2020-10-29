@@ -89,7 +89,6 @@ args = parseArgs()
 
 
 def train(seed):
-    
     # Set manual seed
     torch.manual_seed(seed)
     
@@ -109,8 +108,7 @@ def train(seed):
              train_loader, val_loader,
              test_loader, loss, EPOCHS] = resnet_tiny_imagenet_experiment(device, args.network_name,
                                                                           args.dataset_name, args.in_planes)
-            
-        
+
     elif 'vgg' in args.network_name or 'VGG' in args.network_name:
         if 'tiny_imagenet' in args.dataset_name: 
             [net, optimiser, lr_scheduler,
@@ -122,7 +120,11 @@ def train(seed):
              train_loader, val_loader,
              test_loader, loss, EPOCHS] = vgg_cifar_experiment(device, args.network_name,
                                                                args.dataset_name, args.frac_data_for_train)
-    
+
+    if torch.cuda.device_count() > 1:
+        net = torch.nn.DataParallel(net)
+        print("Using {} GPUs".format(torch.cuda.device_count()))
+
     # Initialize network
     for layer in net.modules():
         if isinstance(layer, nn.Conv2d) or isinstance(layer, nn.Linear):
