@@ -106,7 +106,8 @@ def get_average_saliencies(net, train_dataloader, device, prune_method=3, num_ba
 ###################################################
 ############# Iterative pruning ###################
 ###################################################
-        
+
+
 def get_mask(saliency, pruning_factor):
     """ 
     Given a list of saliencies and a pruning factor (sparsity),
@@ -123,6 +124,7 @@ def get_mask(saliency, pruning_factor):
     for m in saliency:
         keep_masks.append((m >= acceptable_score).float())
     return keep_masks
+
 
 def iterative_pruning(ori_net, train_dataloader, device, pruning_factor=0.1,
                       prune_method=3, num_steps=10,
@@ -205,15 +207,18 @@ def iterative_pruning(ori_net, train_dataloader, device, pruning_factor=0.1,
     
     return mask 
 
+
 def check_global_pruning(mask):
     "Compute fraction of unpruned weights in a mask"
     flattened_mask = torch.cat([torch.flatten(x) for x in mask])
     return flattened_mask.mean()
 
+
 def get_minimum_saliency(saliency):
     "Compute minimum value of saliency globally"
     flattened_saliency = torch.cat([torch.flatten(x) for x in saliency])
     return flattened_saliency.min()
+
 
 def get_maximum_saliency(saliency):
     "Compute maximum value of saliency globally"
@@ -238,12 +243,14 @@ def get_force_saliency(net, mask, train_dataloader, device, num_batches):
     torch.cuda.empty_cache()
     return s
 
+
 def sum_unmasked_saliency(variable, mask):
     "Util to sum all unmasked (mask==1) components"
     V = 0
     for v, m in zip(variable, mask):
         V += v[m > 0].sum()
     return V.detach().cpu()
+
 
 def get_gradient_norm(net, mask, train_dataloader, device, num_batches):
     "Given a dense network, compute the gradient norm after applying the pruning mask."
