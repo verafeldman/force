@@ -223,21 +223,23 @@ def weights_init(m):
 ####################################################################
 ##################### MobileNet v2 #################################
 ####################################################################
-class BottleNeckConfig:
+def bottleneck_config(input_size):
     """ bottleneck configurations for 64x64 and 32x32 input"""
-    def __init__(self, input_size):
-        if input_size == 32:
-            self.expansion = [1, 6, 6, 6, 6]
-            self.planes = [16, 24, 32, 64, 96]
-            self.reps = [1, 2, 3, 4, 3]
-            self.stride = [1, 2, 2, 2, 1]
-        elif input_size == 64:
-            self.expansion = [1, 6, 6, 6, 6, 6]
-            self.planes = [16, 24, 32, 64, 96, 160]
-            self.reps = [1, 2, 3, 4, 3, 3]
-            self.stride = [1, 2, 2, 2, 1, 2]
-        else:
-            raise NotImplementedError("Unsupported input size " + input_size)
+    if input_size == 32:
+        config = {
+            'expansion': [1, 6, 6, 6, 6, ],
+            'planes': [16, 24, 32, 64, 96],
+            'reps': [1, 2, 3, 4, 3],
+            'stride': [1, 2, 2, 2, 1]
+        }
+    elif input_size == 64:
+        config = {
+            'expansion': [1, 6, 6, 6, 6, 6],
+            'planes': [16, 24, 32, 64, 96, 160],
+            'reps': [1, 2, 3, 4, 3, 3],
+            'stride': [1, 2, 2, 2, 1, 2]
+        }
+    return config
 
 
 class BottleneckResidualBlock(nn.Module):
@@ -261,22 +263,15 @@ class BottleneckResidualBlock(nn.Module):
         return out
 
 
-class BottleneckModule(nn.Module):
-    """
-    Concatenation of Bottleneck Residual Blocks with skip connections
-    """
-    def __init__(self, expansion, in_planes, planes, stride=1, reps=1):
-        super(BottleneckModule, self).__init__()
-        self.bottlenecks = [BottleneckResidualBlock(expansion, in_planes, planes, stride)]
-        if reps > 1:
-            self.bottlenecks += [BottleneckResidualBlock(expansion, planes, planes) for r in range(reps-1)]
+class ConvBNRelu6(nn.Module):
+    """ Conv2 + BatchNorm + RelU6 activation """
+    def __init__(self, in_planes, planes, kernel_size = 1, padding= 0):
+        super(ConvBNRelu6, self).__init__()
+        self.conv = nn.Conv2d(in_planes, planes, kernel_size=kernel_size, padding=padding)
+        self.bn = nn.BatchNorm2d(planes)
 
     def forward(self, x):
-        out = self.bottlenecks[0](x)
-        if len(self.bottlenecks) > 1:
-            for bottleneck in self.bottlenecks[1:]:
-                out = torch.add(out, bottleneck(out))
-        return out
+        return F.relu6(self.bn(self.conv(x)))
 
 
 class MobileNetV2(nn.Module):
@@ -285,37 +280,79 @@ class MobileNetV2(nn.Module):
         self.dataset = dataset
         if dataset == 'CIFAR10':
             self.num_classes = 10
-            self.cfg = BottleNeckConfig(32)
         elif dataset == 'CIFAR100':
             self.num_classes = 100
-            self.cfg = BottleNeckConfig(32)
         elif dataset == 'tiny_imagenet':
             self.num_classes = 200
-            self.cfg = BottleNeckConfig(64)
         else:
             raise NotImplementedError("Unsupported dataset " + dataset)
 
-        self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
-        self.bn1 = nn.BatchNorm2d(32)
-        self.conv2 = nn.Conv2d(self.cfg.planes[-1], 640, kernel_size=1)
-        self.bn2 = nn.BatchNorm2d(640)
-        self.avgpool = nn.AvgPool2d(kernel_size=4)
-        self.classifier = nn.Linear(640, self.num_classes, bias=True)
-
-        params = zip(self.cfg.expansion, [32, *self.cfg.planes[:-1]], self.cfg.planes, self.cfg.stride, self.cfg.reps)
-        self.bottleneck_modules = [BottleneckModule(exp, in_planes, planes, stride, reps)
-                                   for exp, in_planes, planes, stride, reps in params]
+        self._make_layers()
 
         if init_weights:
             self.apply(weights_init)
 
     def forward(self, x):
-        out = F.relu6(self.bn1(self.conv1(x)))
-        for module in self.bottleneck_modules:
-            out = module(out)
-        out = F.relu6(self.bn2(self.conv2(out)))
-        out = self.avgpool(out)
-        out = out.view(out.size(0), -1)
-        out = self.classifier(out)
-        return out
+        x_out = self.conv0(x)
+
+        x_out = self.bottleneck1(x_out)
+
+        x_out = self.bottleneck2(x_out)
+        x_out = torch.add(x_out, self.bottleneck3(x_out))
+
+        x_out = self.bottleneck4(x_out)
+        x_out = torch.add(x_out, self.bottleneck5(x_out))
+        x_out = torch.add(x_out, self.bottleneck6(x_out))
+
+        x_out = self.bottleneck7(x_out)
+        x_out = torch.add(x_out, self.bottleneck8(x_out))
+        x_out = torch.add(x_out, self.bottleneck9(x_out))
+        x_out = torch.add(x_out, self.bottleneck10(x_out))
+
+        x_out = self.bottleneck11(x_out)
+        x_out = torch.add(x_out, self.bottleneck12(x_out))
+        x_out = torch.add(x_out, self.bottleneck13(x_out))
+
+        if self.dataset == 'tiny_imagenet':
+            x_out = self.bottleneck14(x_out)
+            x_out = torch.add(x_out, self.bottleneck15(x_out))
+            x_out = torch.add(x_out, self.bottleneck16(x_out))
+
+        x_out = self.convEnd(x_out)
+        x_out = self.avgpool(x_out)
+        x_out = x_out.view(x_out.size(0), -1)
+        x_out = self.classifier(x_out)
+        return x_out
+
+    def _make_layers(self):
+        self.conv0 = ConvBNRelu6(3, 32, kernel_size=3, padding=1)
+
+        self.bottleneck1 = BottleneckResidualBlock(1, 32, 16, 1)  # 1 rep
+
+        self.bottleneck2 = BottleneckResidualBlock(6, 16, 24, 2)  # 2 reps
+        self.bottleneck3 = BottleneckResidualBlock(6, 24, 24, 1)
+
+        self.bottleneck4 = BottleneckResidualBlock(6, 24, 32, 2)  # 3 reps
+        self.bottleneck5 = BottleneckResidualBlock(6, 32, 32, 1)
+        self.bottleneck6 = BottleneckResidualBlock(6, 32, 32, 1)
+
+        self.bottleneck7 = BottleneckResidualBlock(6, 32, 64, 2)  # 4 reps
+        self.bottleneck8 = BottleneckResidualBlock(6, 64, 64, 1)
+        self.bottleneck9 = BottleneckResidualBlock(6, 64, 64, 1)
+        self.bottleneck10 = BottleneckResidualBlock(6, 64, 64, 1)
+
+        self.bottleneck11 = BottleneckResidualBlock(6, 64, 96, 1)  # 3 reps
+        self.bottleneck12 = BottleneckResidualBlock(6, 96, 96, 1)
+        self.bottleneck13 = BottleneckResidualBlock(6, 96, 96, 1)
+        out_planes = 96
+
+        if self.num_classes == 200:
+            self.bottleneck14 = BottleneckResidualBlock(6, 96, 160, 2)  # 3 reps
+            self.bottleneck15 = BottleneckResidualBlock(6, 160, 160, 1)
+            self.bottleneck16 = BottleneckResidualBlock(6, 160, 160, 1)
+            out_planes = 160
+
+        self.convEnd = ConvBNRelu6(out_planes, 640)
+        self.avgpool = nn.AvgPool2d(kernel_size=4)
+        self.classifier = nn.Linear(640, self.num_classes, bias=True)
 

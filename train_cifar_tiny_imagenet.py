@@ -121,6 +121,19 @@ def train(seed):
              test_loader, loss, EPOCHS] = vgg_cifar_experiment(device, args.network_name,
                                                                args.dataset_name, args.frac_data_for_train)
 
+    elif 'mobilenet' in args.network_name:
+        if 'tiny_imagenet' in args.dataset_name:
+            [net, optimiser, lr_scheduler,
+             train_loader, val_loader,
+             test_loader, loss, EPOCHS] = mobilenet_tiny_imagenet_experiment(device, args.dataset_name,
+                                                                             args.frac_data_for_train)
+
+        else:
+            [net, optimiser, lr_scheduler,
+             train_loader, val_loader,
+             test_loader, loss, EPOCHS] = mobilenet_cifar_experiment(device, args.dataset_name,
+                                                                     args.frac_data_for_train)
+
     if torch.cuda.device_count() > 1:
         net = torch.nn.DataParallel(net)
         print("Using {} GPUs".format(torch.cuda.device_count()))

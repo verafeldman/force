@@ -26,6 +26,78 @@ dataset_num_classes = {
     'tiny_imagenet': 200
 }
 
+
+def mobilenet_cifar_experiment(device, dataset, frac_data_for_train=0.9):
+    """
+    Util function to generate necessary components to train MobileNet v2 network
+    on CIFAR10/100 datasets.
+    """
+
+    INIT_LR = 0.1
+    BATCH_SIZE = 128
+    milestones = [150, 250]
+    EPOCHS = 350
+    WEIGHT_DECAY_RATE = 0.0005
+
+    net = MobileNetV2(dataset).to(device)
+
+    optimiser = optim.SGD(net.parameters(),
+                          lr=INIT_LR,
+                          momentum=0.9,
+                          weight_decay=WEIGHT_DECAY_RATE)
+
+    lr_scheduler = optim.lr_scheduler.MultiStepLR(optimiser, milestones=milestones, gamma=0.1)
+
+    train_loader, val_loader = get_cifar_train_valid_loader(
+        batch_size=BATCH_SIZE,
+        augment=True,
+        random_seed=1,
+        valid_size=1 - frac_data_for_train,
+        pin_memory=False,
+        dataset_name=dataset
+    )
+
+    test_loader = get_cifar_test_loader(
+        batch_size=BATCH_SIZE,
+        pin_memory=False,
+        dataset_name=dataset
+    )
+
+    loss = F.cross_entropy
+    return net, optimiser, lr_scheduler, train_loader, val_loader, test_loader, loss, EPOCHS
+
+
+def mobilenet_tiny_imagenet_experiment(device, dataset):
+    """
+    Util function to generate necessary components to train MobileNet v2 network
+    on Tiny Imagenet dataset.
+    """
+
+    INIT_LR = 0.1
+    BATCH_SIZE = 128
+    milestones = [150, 225]
+    EPOCHS = 300
+    WEIGHT_DECAY_RATE = 0.0005
+
+    net = MobileNetV2(dataset=dataset).to(device)
+
+    optimiser = optim.SGD(net.parameters(),
+                          lr=INIT_LR,
+                          momentum=0.9,
+                          weight_decay=WEIGHT_DECAY_RATE)
+
+    lr_scheduler = optim.lr_scheduler.MultiStepLR(optimiser, milestones=milestones, gamma=0.1)
+
+    train_loader, test_loader = get_tiny_imagenet_train_valid_loader(BATCH_SIZE,
+                                                                     augment=True,
+                                                                     shuffle=True,
+                                                                     num_workers=8)
+    val_loader = None
+
+    loss = F.cross_entropy
+    return net, optimiser, lr_scheduler, train_loader, val_loader, test_loader, loss, EPOCHS
+
+
 def vgg_cifar_experiment(device, network_name, dataset, frac_data_for_train=0.9):
     """
     Util function to generate necessary components to train VGG network
@@ -121,7 +193,6 @@ def resnet_tiny_imagenet_experiment(device, network_name, dataset, in_planes):
     EPOCHS = 300
     WEIGHT_DECAY_RATE = 0.0005
 
-    print(network_name)
     num_classes = dataset_num_classes[dataset]
     network_name = network_name.split('stable')[-1]
     net = network_name_module[network_name](num_classes=num_classes, stable_resnet=False,
@@ -157,7 +228,6 @@ def resnet_cifar_experiment(device, network_name, dataset_name, optimiser_name="
     EPOCHS = 350
     WEIGHT_DECAY_RATE = 0.0005
 
-    print(network_name)
     num_classes = dataset_num_classes[dataset_name]
     network_name = network_name.split('stable')[-1]
     net = network_name_module[network_name](num_classes=num_classes, stable_resnet=stable_resnet,
