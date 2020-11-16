@@ -125,8 +125,7 @@ def train(seed):
         if 'tiny_imagenet' in args.dataset_name:
             [net, optimiser, lr_scheduler,
              train_loader, val_loader,
-             test_loader, loss, EPOCHS] = mobilenet_tiny_imagenet_experiment(device, args.dataset_name,
-                                                                             args.frac_data_for_train)
+             test_loader, loss, EPOCHS] = mobilenet_tiny_imagenet_experiment(device, args.dataset_name)
 
         else:
             [net, optimiser, lr_scheduler,

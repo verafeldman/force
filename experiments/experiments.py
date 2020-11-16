@@ -67,7 +67,7 @@ def mobilenet_cifar_experiment(device, dataset, frac_data_for_train=0.9):
     return net, optimiser, lr_scheduler, train_loader, val_loader, test_loader, loss, EPOCHS
 
 
-def mobilenet_tiny_imagenet_experiment(device, dataset):
+def mobilenet_tiny_imagenet_experiment(device, dataset, frac_data_for_train=0.9):
     """
     Util function to generate necessary components to train MobileNet v2 network
     on Tiny Imagenet dataset.

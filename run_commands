@@ -1,0 +1,54 @@
+DONE:
+python train_cifar_tiny_imagenet.py --network_name vgg19 --pruning_factor 1 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+python train_cifar_tiny_imagenet.py --network_name vgg19 --pruning_factor 0.1 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+python train_cifar_tiny_imagenet.py --network_name vgg19 --pruning_factor 0.05 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+python train_cifar_tiny_imagenet.py --network_name vgg19 --pruning_factor 0.01 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+python train_cifar_tiny_imagenet.py --network_name vgg19 --pruning_factor 0.005 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+python train_cifar_tiny_imagenet.py --network_name mobilenet --pruning_factor 1 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+python train_cifar_tiny_imagenet.py --network_name mobilenet --pruning_factor 0.1 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+python train_cifar_tiny_imagenet.py --network_name mobilenet --pruning_factor 0.05 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+python train_cifar_tiny_imagenet.py --network_name mobilenet --pruning_factor 0.01 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+python train_cifar_tiny_imagenet.py --network_name mobilenet --pruning_factor 0.005 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+python train_cifar_tiny_imagenet.py --network_name vgg19 --pruning_factor 0.001 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+python train_cifar_tiny_imagenet.py --network_name vgg19 --pruning_factor 0.0007 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+
+TO DO :
+python train_cifar_tiny_imagenet.py --network_name mobilenet --pruning_factor 0.001 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+python train_cifar_tiny_imagenet.py --network_name mobilenet --pruning_factor 0.0007 --dataset CIFAR10 --num_steps 60 --mode exp --num_batches 1
+
+TO DO: CIFAR100
+python train_cifar_tiny_imagenet.py --network_name vgg19 --pruning_factor 1 --dataset CIFAR100 --num_steps 60 --mode exp --num_batches 10
+
+python train_cifar_tiny_imagenet.py --network_name vgg19 --pruning_factor 0.1 --dataset CIFAR100 --num_steps 60 --mode exp --num_batches 10
+
+python train_cifar_tiny_imagenet.py --network_name vgg19 --pruning_factor 0.05 --dataset CIFAR100 --num_steps 60 --mode exp --num_batches 10
+
+python train_cifar_tiny_imagenet.py --network_name vgg19 --pruning_factor 0.01 --dataset CIFAR100 --num_steps 60 --mode exp --num_batches 10
+
+python train_cifar_tiny_imagenet.py --network_name vgg19 --pruning_factor 0.005 --dataset CIFAR100 --num_steps 60 --mode exp --num_batches 10
+
+python train_cifar_tiny_imagenet.py --network_name mobilenet --pruning_factor 1 --dataset CIFAR100 --num_steps 60 --mode exp --num_batches 10
+
+python train_cifar_tiny_imagenet.py --network_name mobilenet --pruning_factor 0.1 --dataset CIFAR100 --num_steps 60 --mode exp --num_batches 10
+
+python train_cifar_tiny_imagenet.py --network_name mobilenet --pruning_factor 0.05 --dataset CIFAR100 --num_steps 60 --mode exp --num_batches 10
+
+python train_cifar_tiny_imagenet.py --network_name mobilenet --pruning_factor 0.01 --dataset CIFAR100 --num_steps 60 --mode exp --num_batches 10
+
+python train_cifar_tiny_imagenet.py --network_name mobilenet --pruning_factor 0.005 --dataset CIFAR100 --num_steps 60 --mode exp --num_batches 10
+
+
+
